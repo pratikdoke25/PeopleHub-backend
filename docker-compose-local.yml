@@ -11,8 +11,20 @@ services:
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          initial_sync: true
+          ignore:
+            - requirements.txt
+            - Dockerfile
+            - docker-compose-local.yml
+        - action: rebuild
+          path: requirements.txt
+        - action: rebuild
+          path: Dockerfile
     depends_on:
       db:
         condition: service_healthy

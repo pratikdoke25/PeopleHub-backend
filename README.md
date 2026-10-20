@@ -2,19 +2,27 @@
 
 ## Run locally with Docker
 
-Install and start Docker Desktop (or Docker Engine with Docker Compose).
+Install and start Docker Desktop (or Docker Engine with Docker Compose 2.32+).
 From this directory:
 
 ```sh
 cp .env.example .env
-docker compose -f docker-compose-local.yml up --build
+docker compose -f docker-compose-local.yml up --build --watch
 ```
 
 On Windows PowerShell, use `Copy-Item .env.example .env` to copy the file.
 The example environment values work for local development. Django runs at
 http://localhost:8000 and the admin is at http://localhost:8000/admin/.
 The startup command applies database migrations before starting Django.
-Source files are mounted into the container so Django reloads after edits.
+Keep this command running while developing. Compose Watch copies saved source
+changes into the container, and Django automatically reloads Python code.
+This avoids relying on Docker Desktop bind-mount synchronization. Refresh your
+browser after saving to see the updated response. Changes to `requirements.txt`
+or `Dockerfile` automatically rebuild the web service. Files excluded by
+`.dockerignore` (including `.env`) are not synced. After changing `.env`, run
+`docker compose -f docker-compose-local.yml up --build --watch --force-recreate`
+again to load the updated environment. New migrations still need to be applied
+with `docker compose -f docker-compose-local.yml exec web python manage.py migrate`.
 Compose uses the `db` and `redis` service names for container connections.
 
 Create an admin account in a second terminal:
