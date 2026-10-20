@@ -19,7 +19,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "PeopleHub.apps.employees.apps.EmployeesConfig",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
