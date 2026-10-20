@@ -8,7 +8,13 @@ services:
       POSTGRES_PORT: 5432
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379/1
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+      WATCHFILES_FORCE_POLLING: "true"
+    command:
+      - watchfiles
+      - --filter
+      - python
+      - "sh -c 'python manage.py migrate && exec python manage.py runserver 0.0.0.0:8000 --noreload'"
+      - /app
     ports:
       - "8000:8000"
     develop:
