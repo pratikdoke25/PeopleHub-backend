@@ -1,0 +1,83 @@
+name: Django CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Django checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: peoplehub_ci
+          POSTGRES_USER: peoplehub_ci
+          POSTGRES_PASSWORD: ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U peoplehub_ci -d peoplehub_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DJANGO_SETTINGS_MODULE: PeopleHub.settings
+      SECRET_KEY: ci-only-secret-key-not-used-in-production-123456789
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DATABASE_URL: postgresql://peoplehub_ci:ci_password@127.0.0.1:5432/peoplehub_ci
+      REDIS_URL: redis://127.0.0.1:6379/1
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pipsrc/components/core/PDFEditorCanvas/pdfFieldExtraction.test.ts
+          python -m pip install -r requirements.txt
+          python -m pip install pip-audit
+
+      - name: Check dependency compatibility
+        run: python -m pip check
+
+      - name: Check Django configuration
+        run: python manage.py check
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations to temporary database
+        run: python manage.py migrate --noinput
+
+      - name: Run tests
+        run: python manage.py test --noinput
+
+      - name: Audit application dependenciessrc/components/core/PDFEditorCanvas/pdfFieldExtraction.test.ts
+        run: python -m pip_audit -r requirements.txt

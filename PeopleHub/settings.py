@@ -113,6 +113,13 @@ REST_FRAMEWORK = {
 
     "DEFAULT_SCHEMA_CLASS":
         "drf_spectacular.openapi.AutoSchema",
+
+     "DEFAULT_THROTTLE_RATES": {
+        "register": "5/hour",
+        "login": "10/minute",
+        "refresh": "30/minute",
+        "logout": "30/minute",
+    },
 }
 
 
@@ -342,7 +349,5 @@ LOGGING = {
 # CUSTOM USER MODEL
 # =====================================================
 
-# Uncomment only after creating a custom User model
-# in the authentication app, before initial migrations.
-#
-# AUTH_USER_MODEL = "authentication.User"
+# Use the users app model for authentication.
+AUTH_USER_MODEL = "users.User"
